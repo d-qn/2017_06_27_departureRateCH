@@ -166,15 +166,12 @@ lang <- 'EN'
 teaserifiy <- F
 chart.height <- 220
 bg.colour <-  "#f2f2f2" 
+lineWidth <- c(0.5, 5)
 y.max <- max(dd$pc)
-cols <- structure(c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
+cols <- structure( c('#336666', '#366096', '#663333', '#ac673e'), #c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
                     names  = c("Europe", "Americas", "Asia", "Africa"))
 
-
-
-
-ddd <- dd %>% filter(iso2c == "JP") %>% 
-  mutate(arrived = value[year == 0])
+range.arrival <- dd %>% filter(year == 0) %>% select(value) %>% unlist(use.names = F) %>% range()
 
 plotArea <- function(dd, iso) {
   ddd <- dd %>% filter(iso2c == iso) %>% 
@@ -182,7 +179,9 @@ plotArea <- function(dd, iso) {
   # Get translation
   label <- countryTranslation(as.character(ddd[1,'iso2c']), lang)[1,2] %>% unname()
   color <- cols[match(as.character(unique(ddd$continent)), names(cols))] %>% unname()
-  # Après, year, "année", 80% de ces ressortissants ont quitté la Suisse (value/ 1998 value). 
+  lineW <- ddd %>% filter(year == 0) %>% select(value) %>% unlist(use.names = F) %>% 
+    rescale(to = lineWidth, from = range.arrival)
+   # Après, year, "année", 80% de ces ressortissants ont quitté la Suisse (value/ 1998 value). 
   
   ddd$tp <- paste0(
     "Après", " <b>", ddd$year, "</b>", ' années', ", <b>", round(ddd$pc, 1), "%</b>", 
@@ -190,42 +189,51 @@ plotArea <- function(dd, iso) {
     " (", ddd$value, ' restants', "/", ddd$arrived, " arrivés en 1988)"
   )
   
-  hchart(
+  hc1 <- hchart(
     ddd, "areaspline", hcaes(x = year, y = pc, group = iso2c, tp = tp)
   ) %>% 
-    hc_add_theme(hc_theme_swi) %>% 
-    hc_plotOptions(
-      series = list(marker = list(enabled = F), fillColor = color, lineColor = color,
-                    showInLegend = F, lineWidth = 1, fillOpacity = 0.5)
-    ) %>%
+    hc_add_theme(hc_theme_swi) %>%
     hc_chart(
       backgroundColor = bg.colour, height = chart.height, 
-      spacing = list(0,4,9,3), borderRadius = 4,
+      spacing = list(0,8,7,3), borderRadius = 4,
       borderColor = "white", borderWidth = 1
-    ) %>%
+    ) %>% 
+    hc_legend(enabled = F) %>%
     hc_xAxis(
-      useHTML =T, lineColor = "transparent", tickLength = 7,
+      useHTML =T, lineColor = color, tickLength = 7, allowDecimals = F, maxPadding = 0, minPadding = 0,
       labels = list(autoRotation = list(0), 
-                    padding = 1, style = list(fontSize = "0.8em", textOverflow = 'none'), 
+                    padding = 1, style = list(fontSize = "1em", textOverflow = 'none'), 
                     enabled = ifelse(teaserifiy == T, F, T)), 
       gridLineWidth = 0,  title = "", reversed = ifelse(lang == "AR", T, F)
     ) %>%
     hc_yAxis(
       useHTML = T, labels = list(format = '{value}%', style = list(fontSize = "0.8em")),
-      gridLineWidth = 1, ceiling = y.max, tickInterval = 20,
+      gridLineWidth = 1, ceiling = y.max, tickInterval = 20, #gridLineColor = "#808080",
       minPadding = 0, maxPadding = 0, max = y.max,
-      title = "", opposite = ifelse(lang == "AR", T, F)
+      title = "", opposite = ifelse(lang == "AR", T, F)#,
+      # plotLines = list(list(value = ddd %>% filter(year == max(year)) %>% select(pc) %>% unlist(use.names = F), 
+      #                       color = "#193442", width = 1))
     ) %>%
     hc_title(
-      text = label, style = list("fontSize" = "1.2em", "color" = "#FCFCFC"),
-      floating = T, align = "right", useHTML = T, y = chart.height - 45, x = -9) %>%
+      text = label, style = list("fontSize" = "0.9em", "color" = '#1c3a4a'),
+      floating = T, align = "right", useHTML = T, y = chart.height - 45, x = -7) %>%
     hc_tooltip(
       hideDelay = 10, formatter = JS("function() { return this.point.tp; }"), 
       useHTML = T, borderWidth = 1, 
-      backgroundColor = 'rgba(255,255,255,1)', style = list(padding = 3, fontSize = "0.7em"))    
+      backgroundColor = 'rgba(255,255,255,1)', style = list(padding = 3, fontSize = "0.7em"))  
+  hc1 %>% hc_add_series( ddd %>% filter(year == max(year)), "scatter",  hcaes(x = year, y = pc), name = "lastpoint") %>%
+    hc_plotOptions(
+      areaspline = list(marker = list(enabled = FALSE, fillColor = hex_to_rgba(color, 0.7), lineColor = color, radius = 0, 
+                                      states = list(hover = list(radius = 5))), 
+                    color = color, fillColor = hex_to_rgba(color, 0.2), lineColor = color,
+                    showInLegend = F, lineWidth = lineW),
+      scatter = list(marker = list(symbol = "diamond", fillColor = "#193442"), color = color)
+    )
 }
-  
-plots <- lapply(levels(dd$iso2c), function(iso) plotArea(dd, iso))
+#plotArea(dd, "JP")
+
+
+plots <- lapply(rev(levels(dd$iso2c)), function(iso) plotArea(dd, iso))
 
 
 #hw_grid(plots, ncol = 3, rowheight = chart.height)
@@ -234,10 +242,11 @@ plots <- lapply(levels(dd$iso2c), function(iso) plotArea(dd, iso))
   save_html(
     tags$html(
       tags$head(includeHTML(style_swi_highcharter())),
-      #tags$h2(HTML(txt['main.title', lang])),
-      #div(class = "descr", HTML(paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp; ', txt['descr', lang]))),
+      tags$h2(HTML("How many migrants leave Switzerland over time?")),
+      div(class = "descr", HTML(paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp; ', 
+                                       "For immigrants arrived in Switzerland in 1998, share by nationality who left the country by year of residence"))),
       #tags$h3(HTML(txt['h3', lang])),
-      div(class = "graphic", hw_grid(plots, ncol = 6, rowheight = chart.height)),
+      div(class = "graphic", hw_grid(plots, ncol = 3, rowheight = chart.height)),
      # div(id = "cite", HTML(source)),
       # div(class = "footer", HTML(txt['footer', lang])),
       HTML(iframeresizer)  

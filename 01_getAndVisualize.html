@@ -290,15 +290,12 @@ lang &lt;- 'EN'
 teaserifiy &lt;- F
 chart.height &lt;- 220
 bg.colour &lt;-  &quot;#f2f2f2&quot; 
+lineWidth &lt;- c(0.5, 5)
 y.max &lt;- max(dd$pc)
-cols &lt;- structure(c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
+cols &lt;- structure( c('#336666', '#366096', '#663333', '#ac673e'), #c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
                     names  = c(&quot;Europe&quot;, &quot;Americas&quot;, &quot;Asia&quot;, &quot;Africa&quot;))
 
-
-
-
-ddd &lt;- dd %&gt;% filter(iso2c == &quot;JP&quot;) %&gt;% 
-  mutate(arrived = value[year == 0])
+range.arrival &lt;- dd %&gt;% filter(year == 0) %&gt;% select(value) %&gt;% unlist(use.names = F) %&gt;% range()
 
 plotArea &lt;- function(dd, iso) {
   ddd &lt;- dd %&gt;% filter(iso2c == iso) %&gt;% 
@@ -306,7 +303,9 @@ plotArea &lt;- function(dd, iso) {
   # Get translation
   label &lt;- countryTranslation(as.character(ddd[1,'iso2c']), lang)[1,2] %&gt;% unname()
   color &lt;- cols[match(as.character(unique(ddd$continent)), names(cols))] %&gt;% unname()
-  # Après, year, &quot;année&quot;, 80% de ces ressortissants ont quitté la Suisse (value/ 1998 value). 
+  lineW &lt;- ddd %&gt;% filter(year == 0) %&gt;% select(value) %&gt;% unlist(use.names = F) %&gt;% 
+    rescale(to = lineWidth, from = range.arrival)
+   # Après, year, &quot;année&quot;, 80% de ces ressortissants ont quitté la Suisse (value/ 1998 value). 
   
   ddd$tp &lt;- paste0(
     &quot;Après&quot;, &quot; &lt;b&gt;&quot;, ddd$year, &quot;&lt;/b&gt;&quot;, ' années', &quot;, &lt;b&gt;&quot;, round(ddd$pc, 1), &quot;%&lt;/b&gt;&quot;, 
@@ -314,42 +313,51 @@ plotArea &lt;- function(dd, iso) {
     &quot; (&quot;, ddd$value, ' restants', &quot;/&quot;, ddd$arrived, &quot; arrivés en 1988)&quot;
   )
   
-  hchart(
+  hc1 &lt;- hchart(
     ddd, &quot;areaspline&quot;, hcaes(x = year, y = pc, group = iso2c, tp = tp)
   ) %&gt;% 
-    hc_add_theme(hc_theme_swi) %&gt;% 
-    hc_plotOptions(
-      series = list(marker = list(enabled = F), fillColor = color, lineColor = color,
-                    showInLegend = F, lineWidth = 1, fillOpacity = 0.5)
-    ) %&gt;%
+    hc_add_theme(hc_theme_swi) %&gt;%
     hc_chart(
       backgroundColor = bg.colour, height = chart.height, 
-      spacing = list(0,4,9,3), borderRadius = 4,
+      spacing = list(0,8,7,3), borderRadius = 4,
       borderColor = &quot;white&quot;, borderWidth = 1
-    ) %&gt;%
+    ) %&gt;% 
+    hc_legend(enabled = F) %&gt;%
     hc_xAxis(
-      useHTML =T, lineColor = &quot;transparent&quot;, tickLength = 7,
+      useHTML =T, lineColor = color, tickLength = 7, allowDecimals = F, maxPadding = 0, minPadding = 0,
       labels = list(autoRotation = list(0), 
-                    padding = 1, style = list(fontSize = &quot;0.8em&quot;, textOverflow = 'none'), 
+                    padding = 1, style = list(fontSize = &quot;1em&quot;, textOverflow = 'none'), 
                     enabled = ifelse(teaserifiy == T, F, T)), 
       gridLineWidth = 0,  title = &quot;&quot;, reversed = ifelse(lang == &quot;AR&quot;, T, F)
     ) %&gt;%
     hc_yAxis(
       useHTML = T, labels = list(format = '{value}%', style = list(fontSize = &quot;0.8em&quot;)),
-      gridLineWidth = 1, ceiling = y.max, tickInterval = 20,
+      gridLineWidth = 1, ceiling = y.max, tickInterval = 20, #gridLineColor = &quot;#808080&quot;,
       minPadding = 0, maxPadding = 0, max = y.max,
-      title = &quot;&quot;, opposite = ifelse(lang == &quot;AR&quot;, T, F)
+      title = &quot;&quot;, opposite = ifelse(lang == &quot;AR&quot;, T, F)#,
+      # plotLines = list(list(value = ddd %&gt;% filter(year == max(year)) %&gt;% select(pc) %&gt;% unlist(use.names = F), 
+      #                       color = &quot;#193442&quot;, width = 1))
     ) %&gt;%
     hc_title(
-      text = label, style = list(&quot;fontSize&quot; = &quot;1.2em&quot;, &quot;color&quot; = &quot;#FCFCFC&quot;),
-      floating = T, align = &quot;right&quot;, useHTML = T, y = chart.height - 45, x = -9) %&gt;%
+      text = label, style = list(&quot;fontSize&quot; = &quot;0.9em&quot;, &quot;color&quot; = '#1c3a4a'),
+      floating = T, align = &quot;right&quot;, useHTML = T, y = chart.height - 45, x = -7) %&gt;%
     hc_tooltip(
       hideDelay = 10, formatter = JS(&quot;function() { return this.point.tp; }&quot;), 
       useHTML = T, borderWidth = 1, 
-      backgroundColor = 'rgba(255,255,255,1)', style = list(padding = 3, fontSize = &quot;0.7em&quot;))    
+      backgroundColor = 'rgba(255,255,255,1)', style = list(padding = 3, fontSize = &quot;0.7em&quot;))  
+  hc1 %&gt;% hc_add_series( ddd %&gt;% filter(year == max(year)), &quot;scatter&quot;,  hcaes(x = year, y = pc), name = &quot;lastpoint&quot;) %&gt;%
+    hc_plotOptions(
+      areaspline = list(marker = list(enabled = FALSE, fillColor = hex_to_rgba(color, 0.7), lineColor = color, radius = 0, 
+                                      states = list(hover = list(radius = 5))), 
+                    color = color, fillColor = hex_to_rgba(color, 0.2), lineColor = color,
+                    showInLegend = F, lineWidth = lineW),
+      scatter = list(marker = list(symbol = &quot;diamond&quot;, fillColor = &quot;#193442&quot;), color = color)
+    )
 }
-  
-plots &lt;- lapply(levels(dd$iso2c), function(iso) plotArea(dd, iso))
+#plotArea(dd, &quot;JP&quot;)
+
+
+plots &lt;- lapply(rev(levels(dd$iso2c)), function(iso) plotArea(dd, iso))
 
 
 #hw_grid(plots, ncol = 3, rowheight = chart.height)
@@ -358,10 +366,11 @@ plots &lt;- lapply(levels(dd$iso2c), function(iso) plotArea(dd, iso))
   save_html(
     tags$html(
       tags$head(includeHTML(style_swi_highcharter())),
-      #tags$h2(HTML(txt['main.title', lang])),
-      #div(class = &quot;descr&quot;, HTML(paste0('&lt;img src=&quot;https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png&quot; width=&quot;12&quot; align=&quot;top&quot;&gt;&amp;nbsp; ', txt['descr', lang]))),
+      tags$h2(HTML(&quot;How many migrants leave Switzerland over time?&quot;)),
+      div(class = &quot;descr&quot;, HTML(paste0('&lt;img src=&quot;https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png&quot; width=&quot;12&quot; align=&quot;top&quot;&gt;&amp;nbsp; ', 
+                                       &quot;For immigrants arrived in Switzerland in 1998, share by nationality who left the country by year of residence&quot;))),
       #tags$h3(HTML(txt['h3', lang])),
-      div(class = &quot;graphic&quot;, hw_grid(plots, ncol = 6, rowheight = chart.height)),
+      div(class = &quot;graphic&quot;, hw_grid(plots, ncol = 3, rowheight = chart.height)),
      # div(id = &quot;cite&quot;, HTML(source)),
       # div(class = &quot;footer&quot;, HTML(txt['footer', lang])),
       HTML(iframeresizer)  
