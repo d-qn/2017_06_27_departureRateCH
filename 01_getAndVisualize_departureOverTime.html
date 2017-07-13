@@ -149,9 +149,9 @@ $(document).ready(function () {
 <li><a href="http://nccr-onthemove.ch/knowledge-transfer/migration-mobility-indicators/quelle-proportion-de-migrant⋅e⋅s-quitte-la-suisse-au-fil-du-temps/">nccr</a></li>
 </ul>
 <pre class="r"><code>txt &lt;- loadTranslation(translation.file)</code></pre>
-<pre><code>## Warning in loadTranslation(translation.file): PT AR  RU  ES  JA  ZH languages will be discarded!</code></pre>
+<pre><code>## Warning in loadTranslation(translation.file): PT AR  RU  ES  ZH languages will be discarded!</code></pre>
 <pre><code>## 
-##  Remaining column names:  EN FR DE IT</code></pre>
+##  Remaining column names:  EN FR DE IT JA</code></pre>
 <pre class="r"><code>data.read &lt;- read_csv(data.file) %&gt;% 
   dplyr::rename( `0` = `Arrivé en 1998`, nationality = Nationalité)</code></pre>
 <pre><code>## Parsed with column specification:
@@ -314,11 +314,21 @@ plotArea &lt;- function(dd, iso) {
   lineW &lt;- ddd %&gt;% filter(year == 0) %&gt;% select(value) %&gt;% unlist(use.names = F) %&gt;% 
     rescale(to = lineWidth, from = range.arrival)
   
-  ddd$tp &lt;- paste0(
-    txt['tp.after', lang], &quot; &lt;b&gt;&quot;, ddd$year, &quot;&lt;/b&gt; &quot;, ifelse(ddd$year &lt;= 1, txt['tp.year', lang], txt['tp.years', lang]), &quot;,&lt;br&gt;&lt;b&gt;&quot;, round(ddd$pc, 1), &quot;%&lt;/b&gt; &quot;, 
-    txt['tp.leave', lang], &quot;.&lt;br&gt;&quot;, 
-    &quot; (&quot;, ddd$value, ' ', txt['tp.remain', lang], &quot;/&quot;, ddd$arrived, &quot; &quot;, txt['tp.arrived', lang], &quot;)&quot;
-  )
+  if(lang == &quot;JA&quot;) {
+    ddd$tp &lt;- paste0(
+     &quot;&lt;b&gt;&quot;, round(ddd$pc, 1), &quot;%&lt;/b&gt; &quot;, txt['tp.leave', lang], &quot; &lt;b&gt;&quot;, ddd$year, &quot;&lt;/b&gt;&quot;, txt['tp.year', lang], &quot;&lt;br&gt;&quot;,
+      &quot; (&quot;,  txt['tp.arrived', lang], ddd$arrived, '人のうち', ddd$value,  txt['tp.remain', lang], &quot;)&quot;
+      #txt['tp.after', lang], &quot; &lt;b&gt;&quot;, ddd$year, &quot;&lt;/b&gt; &quot;, ifelse(ddd$year &lt;= 1, txt['tp.year', lang], txt['tp.years', lang]), &quot;,&lt;br&gt;
+    )       
+  } else {
+    ddd$tp &lt;- paste0(
+      txt['tp.after', lang], &quot; &lt;b&gt;&quot;, ddd$year, &quot;&lt;/b&gt; &quot;, ifelse(ddd$year &lt;= 1, txt['tp.year', lang], txt['tp.years', lang]), &quot;,&lt;br&gt;&lt;b&gt;&quot;, round(ddd$pc, 1), &quot;%&lt;/b&gt; &quot;, 
+      txt['tp.leave', lang], &quot;.&lt;br&gt;&quot;, 
+      &quot; (&quot;, ddd$value, ' ', txt['tp.remain', lang], &quot;/&quot;, ddd$arrived, &quot; &quot;, txt['tp.arrived', lang], &quot;)&quot;
+    )    
+  }
+
+  
   
   # Approximate the duration after which 50% left
   #plot(ddd$pc, ddd$year)

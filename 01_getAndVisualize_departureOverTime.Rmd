@@ -25,6 +25,8 @@ output:
 
 ```{r setup, include=FALSE}
 data.file <- "input/nccr_departuresOverTime.csv"
+translation.file <- "input/How many migrants leave Switzerland over time- - Sheet1.csv"
+teaserify <- F
 processPx <- F
 px.file <- "data/px-x-0102010000_104.px"
 pop.file <- "input/popForeigners.csv"
@@ -41,6 +43,8 @@ require(viridis)
 ```
 
 ```{r data load & wrangle}
+txt <- loadTranslation(translation.file)
+
 data.read <- read_csv(data.file) %>% 
   dplyr::rename( `0` = `Arrivé en 1998`, nationality = Nationalité)
 
@@ -157,19 +161,23 @@ g1b + facet_wrap(~iso2c, ncol = 3)
 ```
 
 
-```{r interactive}
+```{r interactive setup & helper}
 library(highcharter)
 library(swiRcharts)
 library(htmltools)
 
-lang <- 'EN'
-teaserifiy <- F
-chart.height <- 220
+lang <- 'FR'
+teaserifiy <- T
+chart.height <- 150
 bg.colour <-  "#f2f2f2" 
-lineWidth <- c(0.5, 5)
+lineWidth <- c(0.5, 6)
 y.max <- max(dd$pc)
 cols <- structure( c('#336666', '#366096', '#663333', '#ac673e'), #c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
                     names  = c("Europe", "Americas", "Asia", "Africa"))
+
+# cols <- structure( c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
+#                     names  = c("Europe", "Americas", "Asia", "Africa"))
+
 
 range.arrival <- dd %>% filter(year == 0) %>% select(value) %>% unlist(use.names = F) %>% range()
 
@@ -181,21 +189,38 @@ plotArea <- function(dd, iso) {
   color <- cols[match(as.character(unique(ddd$continent)), names(cols))] %>% unname()
   lineW <- ddd %>% filter(year == 0) %>% select(value) %>% unlist(use.names = F) %>% 
     rescale(to = lineWidth, from = range.arrival)
-   # Après, year, "année", 80% de ces ressortissants ont quitté la Suisse (value/ 1998 value). 
   
-  ddd$tp <- paste0(
-    "Après", " <b>", ddd$year, "</b>", ' années', ", <b>", round(ddd$pc, 1), "%</b>", 
-    " de ces ressortissants ont quitté la Suisse.", "<br>", 
-    " (", ddd$value, ' restants', "/", ddd$arrived, " arrivés en 1988)"
-  )
+  if(lang == "JA") {
+    ddd$tp <- paste0(
+     "<b>", round(ddd$pc, 1), "%</b> ", txt['tp.leave', lang], " <b>", ddd$year, "</b>", txt['tp.year', lang], "<br>",
+      " (",  txt['tp.arrived', lang], ddd$arrived, '人のうち', ddd$value,  txt['tp.remain', lang], ")"
+      #txt['tp.after', lang], " <b>", ddd$year, "</b> ", ifelse(ddd$year <= 1, txt['tp.year', lang], txt['tp.years', lang]), ",<br>
+    )       
+  } else {
+    ddd$tp <- paste0(
+      txt['tp.after', lang], " <b>", ddd$year, "</b> ", ifelse(ddd$year <= 1, txt['tp.year', lang], txt['tp.years', lang]), ",<br><b>", round(ddd$pc, 1), "%</b> ", 
+      txt['tp.leave', lang], ".<br>", 
+      " (", ddd$value, ' ', txt['tp.remain', lang], "/", ddd$arrived, " ", txt['tp.arrived', lang], ")"
+    )    
+  }
+
+  
+  
+  # Approximate the duration after which 50% left
+  #plot(ddd$pc, ddd$year)
+  #y.50 <- spline(y = ddd$year, x = ddd$pc, xout = 50)$y
+  y.50 <- approx(y = ddd$year, x = ddd$pc, xout = 50)$y
+  #cat("\n", y.50)
+  df50 <- data.frame(year = c(y.50, y.50), pc = c(0, 50))
+  
   
   hc1 <- hchart(
-    ddd, "areaspline", hcaes(x = year, y = pc, group = iso2c, tp = tp)
+    ddd, "areaspline", hcaes(x = year, y = pc, tp = tp)
   ) %>% 
     hc_add_theme(hc_theme_swi) %>%
     hc_chart(
       backgroundColor = bg.colour, height = chart.height, 
-      spacing = list(0,8,7,3), borderRadius = 4,
+      spacing = list(-5, 8, 3, 3), borderRadius = 4,
       borderColor = "white", borderWidth = 1
     ) %>% 
     hc_legend(enabled = F) %>%
@@ -203,55 +228,83 @@ plotArea <- function(dd, iso) {
       useHTML =T, lineColor = color, tickLength = 7, allowDecimals = F, maxPadding = 0, minPadding = 0,
       labels = list(autoRotation = list(0), 
                     padding = 1, style = list(fontSize = "1em", textOverflow = 'none'), 
-                    enabled = ifelse(teaserifiy == T, F, T)), 
+                    enabled = ifelse(teaserifiy == T, T, F)), 
       gridLineWidth = 0,  title = "", reversed = ifelse(lang == "AR", T, F)
     ) %>%
     hc_yAxis(
       useHTML = T, labels = list(format = '{value}%', style = list(fontSize = "0.8em")),
       gridLineWidth = 1, ceiling = y.max, tickInterval = 20, #gridLineColor = "#808080",
       minPadding = 0, maxPadding = 0, max = y.max,
-      title = "", opposite = ifelse(lang == "AR", T, F)#,
-      # plotLines = list(list(value = ddd %>% filter(year == max(year)) %>% select(pc) %>% unlist(use.names = F), 
-      #                       color = "#193442", width = 1))
-    ) %>%
-    hc_title(
-      text = label, style = list("fontSize" = "0.9em", "color" = '#1c3a4a'),
-      floating = T, align = "right", useHTML = T, y = chart.height - 45, x = -7) %>%
-    hc_tooltip(
-      hideDelay = 10, formatter = JS("function() { return this.point.tp; }"), 
-      useHTML = T, borderWidth = 1, 
-      backgroundColor = 'rgba(255,255,255,1)', style = list(padding = 3, fontSize = "0.7em"))  
-  hc1 %>% hc_add_series( ddd %>% filter(year == max(year)), "scatter",  hcaes(x = year, y = pc), name = "lastpoint") %>%
+      title = "", opposite = ifelse(lang == "AR", T, F)
+    )
+    if(!teaserify) {
+    hc1 %<>% 
+        hc_title(
+          text = label, style = list("fontSize" = "0.8em", "color" = '#1c3a4a'),
+          floating = T, align = "right", useHTML = T, y = chart.height - 44, x = -5) %>%
+        hc_tooltip(
+          hideDelay = 10, formatter = JS("function() { return this.point.tp; }"), 
+          useHTML = T, borderWidth = 1, 
+          backgroundColor = 'rgba(255,255,255,1)', style = list(padding = 3, fontSize = "0.7em")
+    )    
+    } 
+  
+  hc2 <- hc1 %>% hc_add_series( ddd %>% filter(year == max(year)), "scatter",  hcaes(x = year, y = pc), name = "lastpoint") %>%
+    #hc_add_series(dd %>% filter(iso2c != iso), "spline", hcaes(x = year, y = pc, group = iso2c), name = "bg.spline") %>%
     hc_plotOptions(
       areaspline = list(marker = list(enabled = FALSE, fillColor = hex_to_rgba(color, 0.7), lineColor = color, radius = 0, 
                                       states = list(hover = list(radius = 5))), 
-                    color = color, fillColor = hex_to_rgba(color, 0.2), lineColor = color,
+                    color = color, fillColor = hex_to_rgba(color, ifelse(teaserify, 0.7, 0.2)), lineColor = color,
                     showInLegend = F, lineWidth = lineW),
-      scatter = list(marker = list(symbol = "diamond", fillColor = "#193442"), color = color)
+      scatter = list(marker = list(symbol = "diamond", fillColor = "#193442"), color = color),
+      line = list(marker = list(enabled = FALSE, radius = 0), color = hex_to_rgba("#193442", 0.6), enableMouseTracking = F, dashStyle = "ShortDash")#,
+     # spline = list(marker = list(enabled = FALSE, radius = 0), color = hex_to_rgba("#595959", 0.7), enableMouseTracking = F, lineWidth = 0.2)
     )
+  if(!is.na(y.50) && y.50 <= 16) {
+    hc2 %>% hc_add_series(df50, "line", hcaes(x = year, y = pc), name = "50line")
+  } else {
+    hc2
+  }
 }
 #plotArea(dd, "JP")
 
+```
 
-plots <- lapply(rev(levels(dd$iso2c)), function(iso) plotArea(dd, iso))
-
-
-#hw_grid(plots, ncol = 3, rowheight = chart.height)
-
-
+```{r loop by language}
+if(teaserify) {
+  #chart.height <- 330
+  plots <- lapply(rev(levels(dd$iso2c)), function(iso) plotArea(dd, iso))  
   save_html(
     tags$html(
-      tags$head(includeHTML(style_swi_highcharter())),
-      tags$h2(HTML("How many migrants leave Switzerland over time?")),
-      div(class = "descr", HTML(paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp; ', 
-                                       "For immigrants arrived in Switzerland in 1998, share by nationality who left the country by year of residence"))),
-      #tags$h3(HTML(txt['h3', lang])),
-      div(class = "graphic", hw_grid(plots, ncol = 3, rowheight = chart.height)),
-     # div(id = "cite", HTML(source)),
-      # div(class = "footer", HTML(txt['footer', lang])),
-      HTML(iframeresizer)  
-    ), #background = chart.area.bg, 
-    file =  paste0("departureOverTime_", lang, ".html"), libdir = "js")
+      div(class = "graphic", hw_grid(plots, ncol = 6, rowheight = chart.height))
+    ),
+    file =  paste0("departureOverTime_teaser.html"), libdir = "js")  
   
-  
+} else {
+  for(lang in colnames(txt)) {
+    
+    plots <- lapply(rev(levels(dd$iso2c)), function(iso) plotArea(dd, iso))
+    
+    source <- paste0(
+      txt['source', lang], ": ", htmlLink( "http://nccr-onthemove.ch/home/", txt['source.name', lang] ), " | ",
+      txt['code', lang], ": ", htmlLink("https://github.com/jbkunst/highcharter", txt['code.name', lang]),
+      " | swissinfo.ch"
+    )
+    
+    save_html(
+      tags$html(
+        tags$head(includeHTML(style_swi_highcharter())),
+        tags$h2(HTML(txt["main.title", lang])),
+        div(class = "descr", HTML(paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp; ', 
+                                         txt["descr1", lang], "<br>",  txt["descr2", lang]))),
+        #tags$h3(HTML(txt['h3', lang])),
+        div(class = "graphic", hw_grid(plots, ncol = 3, rowheight = chart.height)),
+        div(id = "cite", HTML(source)),
+        HTML(iframeresizer)  
+      ),
+      file =  paste0("departureOverTime_", lang, ".html"), libdir = "js")  
+    
+  }  
+}
+
 ```
