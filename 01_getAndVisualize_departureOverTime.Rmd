@@ -175,10 +175,6 @@ y.max <- max(dd$pc)
 cols <- structure( c('#336666', '#366096', '#663333', '#ac673e'), #c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
                     names  = c("Europe", "Americas", "Asia", "Africa"))
 
-# cols <- structure( c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
-#                     names  = c("Europe", "Americas", "Asia", "Africa"))
-
-
 range.arrival <- dd %>% filter(year == 0) %>% select(value) %>% unlist(use.names = F) %>% range()
 
 plotArea <- function(dd, iso) {
@@ -241,7 +237,8 @@ plotArea <- function(dd, iso) {
     hc1 %<>% 
         hc_title(
           text = label, style = list("fontSize" = "0.8em", "color" = '#1c3a4a'),
-          floating = T, align = "right", useHTML = T, y = chart.height - 44, x = -5) %>%
+          floating = T, align = ifelse(lang == "AR", "left", "right"), 
+          useHTML = T, y = chart.height - 44, x = ifelse(lang == "AR", 5, -5)) %>%
         hc_tooltip(
           hideDelay = 10, formatter = JS("function() { return this.point.tp; }"), 
           useHTML = T, borderWidth = 1, 
@@ -295,8 +292,7 @@ if(teaserify) {
       tags$html(
         tags$head(includeHTML(style_swi_highcharter())),
         tags$h2(HTML(txt["main.title", lang])),
-        div(class = "descr", HTML(paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp; ', 
-                                         txt["descr1", lang], "<br>",  txt["descr2", lang]))),
+        div(class = "descr", HTML(paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp; ', txt["descr1", lang], "<br>",  txt["descr2", lang]))),
         #tags$h3(HTML(txt['h3', lang])),
         div(class = "graphic", hw_grid(plots, ncol = 3, rowheight = chart.height)),
         div(id = "cite", HTML(source)),

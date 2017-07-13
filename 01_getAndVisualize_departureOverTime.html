@@ -149,9 +149,9 @@ $(document).ready(function () {
 <li><a href="http://nccr-onthemove.ch/knowledge-transfer/migration-mobility-indicators/quelle-proportion-de-migrant⋅e⋅s-quitte-la-suisse-au-fil-du-temps/">nccr</a></li>
 </ul>
 <pre class="r"><code>txt &lt;- loadTranslation(translation.file)</code></pre>
-<pre><code>## Warning in loadTranslation(translation.file): PT AR  RU  ES  ZH languages will be discarded!</code></pre>
+<pre><code>## Warning in loadTranslation(translation.file): PT RU  ES  ZH languages will be discarded!</code></pre>
 <pre><code>## 
-##  Remaining column names:  EN FR DE IT JA</code></pre>
+##  Remaining column names:  EN FR DE IT AR JA</code></pre>
 <pre class="r"><code>data.read &lt;- read_csv(data.file) %&gt;% 
   dplyr::rename( `0` = `Arrivé en 1998`, nationality = Nationalité)</code></pre>
 <pre><code>## Parsed with column specification:
@@ -299,10 +299,6 @@ y.max &lt;- max(dd$pc)
 cols &lt;- structure( c('#336666', '#366096', '#663333', '#ac673e'), #c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
                     names  = c(&quot;Europe&quot;, &quot;Americas&quot;, &quot;Asia&quot;, &quot;Africa&quot;))
 
-# cols &lt;- structure( c('#4c6570', '#7e827a', '#beb298', '#b15953'), 
-#                     names  = c(&quot;Europe&quot;, &quot;Americas&quot;, &quot;Asia&quot;, &quot;Africa&quot;))
-
-
 range.arrival &lt;- dd %&gt;% filter(year == 0) %&gt;% select(value) %&gt;% unlist(use.names = F) %&gt;% range()
 
 plotArea &lt;- function(dd, iso) {
@@ -365,7 +361,8 @@ plotArea &lt;- function(dd, iso) {
     hc1 %&lt;&gt;% 
         hc_title(
           text = label, style = list(&quot;fontSize&quot; = &quot;0.8em&quot;, &quot;color&quot; = '#1c3a4a'),
-          floating = T, align = &quot;right&quot;, useHTML = T, y = chart.height - 44, x = -5) %&gt;%
+          floating = T, align = ifelse(lang == &quot;AR&quot;, &quot;left&quot;, &quot;right&quot;), 
+          useHTML = T, y = chart.height - 44, x = ifelse(lang == &quot;AR&quot;, 5, -5)) %&gt;%
         hc_tooltip(
           hideDelay = 10, formatter = JS(&quot;function() { return this.point.tp; }&quot;), 
           useHTML = T, borderWidth = 1, 
@@ -415,8 +412,7 @@ plotArea &lt;- function(dd, iso) {
       tags$html(
         tags$head(includeHTML(style_swi_highcharter())),
         tags$h2(HTML(txt[&quot;main.title&quot;, lang])),
-        div(class = &quot;descr&quot;, HTML(paste0('&lt;img src=&quot;https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png&quot; width=&quot;12&quot; align=&quot;top&quot;&gt;&amp;nbsp; ', 
-                                         txt[&quot;descr1&quot;, lang], &quot;&lt;br&gt;&quot;,  txt[&quot;descr2&quot;, lang]))),
+        div(class = &quot;descr&quot;, HTML(paste0('&lt;img src=&quot;https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png&quot; width=&quot;12&quot; align=&quot;top&quot;&gt;&amp;nbsp; ', txt[&quot;descr1&quot;, lang], &quot;&lt;br&gt;&quot;,  txt[&quot;descr2&quot;, lang]))),
         #tags$h3(HTML(txt['h3', lang])),
         div(class = &quot;graphic&quot;, hw_grid(plots, ncol = 3, rowheight = chart.height)),
         div(id = &quot;cite&quot;, HTML(source)),
