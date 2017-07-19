@@ -149,9 +149,9 @@ $(document).ready(function () {
 <li><a href="http://nccr-onthemove.ch/knowledge-transfer/migration-mobility-indicators/quelle-proportion-de-migrant⋅e⋅s-quitte-la-suisse-au-fil-du-temps/">nccr</a></li>
 </ul>
 <pre class="r"><code>txt &lt;- loadTranslation(translation.file)</code></pre>
-<pre><code>## Warning in loadTranslation(translation.file): PT RU  ES  ZH languages will be discarded!</code></pre>
+<pre><code>## Warning in loadTranslation(translation.file): PT RU  ZH languages will be discarded!</code></pre>
 <pre><code>## 
-##  Remaining column names:  EN FR DE IT AR JA</code></pre>
+##  Remaining column names:  EN FR DE IT AR ES JA</code></pre>
 <pre class="r"><code>data.read &lt;- read_csv(data.file) %&gt;% 
   dplyr::rename( `0` = `Arrivé en 1998`, nationality = Nationalité)</code></pre>
 <pre><code>## Parsed with column specification:
@@ -332,7 +332,6 @@ plotArea &lt;- function(dd, iso) {
   y.50 &lt;- approx(y = ddd$year, x = ddd$pc, xout = 50)$y
   #cat(&quot;\n&quot;, y.50)
   df50 &lt;- data.frame(year = c(y.50, y.50), pc = c(0, 50))
-  
   
   hc1 &lt;- hchart(
     ddd, &quot;areaspline&quot;, hcaes(x = year, y = pc, tp = tp)

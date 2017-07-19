@@ -1,0 +1,39 @@
+code,EN,FR,DE,IT,PT,AR,RU,ES,JA,ZH
+main.title,How many migrants leave Switzerland over time?,Quelle proportion de migrants quitte la Suisse au fil du temps?,Wie viele Migranten verlassen die Schweiz im Lauf der Zeit?,Quale percentuale di migranti lascia la Svizzera entro un certo periodo? ,,كم تبلغ نسبة المهاجرين التي تُغادر سويسرا بمرور الزمن؟,,"¿Qué proporción de inmigrantes sale de Suiza al
+cabo de algún tiempo?
+
+",国籍別に見る移民のスイス滞在年数,
+descr1,"
+
+Proportion
+of immigrants who arrived in Switzerland in 1998 who have now left the country,
+according to the number of years’ residence and nationality of origin.
+
+","Proportion d'immigrés arrivés Suisse en 1998 ayant quitté le pays, selon le nombre d'années de résidence et la nationalité d'origine.","Anteil Immigranten, die 1998 in die Schweiz kamen, nach Anzahl Aufenthaltsjahren und Herkunftsland.","Proporzione di immigrati arrivati in Svizzera nel 1998 che hanno lasciato il paese, secondo il numero di anni di residenza e la nazionalità d’origine.",,نسبة المهاجرين الذين قدموا إلى سويسرا سنة 1998 وغادروا البلد، حسب سنوات الإقامة والجنسية ألأصلية. ,,"Proporción de inmigrantes llegados a Suiza en
+1988 y que ya han partido, según el número de años de residencia, nacionalidad y origen.",１９９８年にスイスへ来た移民を１５年間にわたり追跡。グラフは９８年に入国した移民のうち、２０１３年までに帰国した移民の割合を％で示した（出身国別）。,
+descr2,"
+
+The
+vertical dotted line indicates at which point half of the immigrants who
+arrived in 1998 had left Switzerland. The thickness of the curves is
+proportional to the number of immigrants in 1998. The colours represent the
+continent of origin. 
+
+",La ligne verticale en trait tillé indique après combien d'années la moitié des ressortissants arrivés en 1998 ont quitté la Suisse. L'épaisseur des courbes est proportionnelle au nombre d'immigrés en 1998. Les couleurs correspondent aux continents d'origine.,"Die gestrichelte vertikale Linie zeigt, nach wie vielen Jahren die Hälfte der Migranten, die 1998 einwanderten, die Schweiz verlassen haben. Die Stärke der Kurve ist proportional zur Anzahl Immigranten im Jahr 1998. Die Farbe entspricht dem Herkunftskontinent.","La linea verticale tratteggiata indica, dopo quanti anni, la metà dei cittadini arrivati nel 1998 ha lasciato la Svizzera. Lo spessore delle curve è proporzionale al numero di immigrati nel 1998. I colori corrispondono ai continenti d’origine.",,يُشير الخط العمودي المتقطع إلى عدد السنوات التي غادر على إثرها سويسرا نصف الأجانب الذين وصلوا إليها في عام 1998. سُمك المنحنيات مُتناسب مع عدد المهاجرين الوافدين في عام 1998. أما الألوان فهي متوافقة مع القارات التي قدم منها المهاجرون.,,"La línea vertical punteada indica después de
+cuantos años, la mitad de los ciudadanos llegados a Suiza en 1998 han salido de
+ella. El espesor de las curvas es proporcional al número de inmigrantes en
+1998. Los colores corresponden a los continentes de origen.","
+
+垂直の点線は、９８年に入国した移民の半数が、入国から何年後にスイスを離れたかを示している（例：９８年にスイスへ入国した日本人の４９．４％が２年後に出国）。
+
+",
+source,Source,source,Quelle,Fonte,fonte: Divisão Federal de Estatísticas,المصدر,Источник,Fuente,出典,来源
+source.name,NCCR - on the move / Federal Statistical Office / State Secretariat for Migration ,NCCR – on the move | Office fédéral de la statistique & Secrétariat d’Etat aux Migrations,NCCR - on the move / Bundesamt für Statistik & Staatssekretariat für Migration,NCCR - on the move / Ufficio federale di statistica & Segretariato di Stato della migrazione,,برنامج NCCR - on the move - المكتب الفدرالي للإحصاء وكتابة (أو أمانة) الدولة للهجرة ,,NCCR-on the move/Oficina Federal de Estadísticas y Secretaría de Estado para las Migraciones,NCCR – on the move／連邦統計局および連邦移民事務局,
+code,Code,code,Code,Codice,código,code,Код,código,コード,代码
+code.name,Highcharter,Highcharter,Highcharter,Highcharter,Highcharter,Highcharter,Highcharter,Highcharter,Highcharter,Highcharter
+tp.after,After,Après,Nach,Dopo,,بعد ,,Después,&nbsp;,
+tp.year,year,année,Jahr,anno,,السنة ,,año,年後に出国,
+tp.years,years,années,Jahre,anni,,السنوات ,,años,年後に出国,
+tp.leave,of these immigrants had left Switzerland,de ces ressortissants ont quitté la Suisse,dieser Immigranten haben die Schweiz verlassen,di questi immigrati hanno lasciato la Svizzera,,هؤلاء الأشخاص غادروا سويسرا ,,de esos inmigrantes han salido de Suiza,が入国から,
+tp.remain,remaining,restants,Verbleibende,rimanenti,,المتبقون ,,restantes,人が残留,
+tp.arrived,arrived in 1998,arrivés en 1998,Ankommende im 1998,arrivati nel 1998,,وصلوا في عام 1998,,llegados en 1998,1998 年の入国者数,
